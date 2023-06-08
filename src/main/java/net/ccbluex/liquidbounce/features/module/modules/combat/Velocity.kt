@@ -6,32 +6,27 @@
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
 import net.ccbluex.liquidbounce.LiquidBounce
-import net.ccbluex.liquidbounce.event.EventTarget
-import net.ccbluex.liquidbounce.event.JumpEvent
-import net.ccbluex.liquidbounce.event.PacketEvent
-import net.ccbluex.liquidbounce.event.UpdateEvent
-import net.ccbluex.liquidbounce.event.StrafeEvent
+import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
 import net.ccbluex.liquidbounce.features.module.modules.movement.Speed
-import net.ccbluex.liquidbounce.ui.client.hud.element.elements.Notification
 import net.ccbluex.liquidbounce.utils.MovementUtils
 import net.ccbluex.liquidbounce.utils.RotationUtils
 import net.ccbluex.liquidbounce.utils.timer.MSTimer
 import net.ccbluex.liquidbounce.value.BoolValue
 import net.ccbluex.liquidbounce.value.FloatValue
-import net.ccbluex.liquidbounce.value.IntegerValue
 import net.ccbluex.liquidbounce.value.ListValue
+import net.minecraft.network.Packet
 import net.minecraft.network.play.client.*
 import net.minecraft.network.play.client.C03PacketPlayer.*
 import net.minecraft.network.play.server.*
-import net.minecraft.util.MathHelper
 import net.minecraft.util.BlockPos
-
-import java.lang.Math
-import kotlin.math.sin
+import net.minecraft.util.MathHelper
 import kotlin.math.cos
+import kotlin.math.sin
+import net.minecraft.network.play.server.S12PacketEntityVelocity
+import net.minecraft.network.play.server.S27PacketExplosion
 
 @ModuleInfo(name = "Velocity", description = "Allows you to modify the amount of knockback you take.", category = ModuleCategory.COMBAT)
 class Velocity : Module() {
@@ -44,13 +39,15 @@ class Velocity : Module() {
     private val horizontalExplosionValue = FloatValue("HorizontalExplosion", 0F, 0F, 1F, "x")
     private val verticalExplosionValue = FloatValue("VerticalExplosion", 0F, 0F, 1F, "x")
     private val modeValue = ListValue("Mode", arrayOf("Cancel", "Simple", "AACv4", "AAC4Reduce", "AAC5Reduce", "AAC5.2.0", "AAC", "AACPush", "AACZero",
-            "Reverse", "SmoothReverse", "Jump", "Glitch", "Phase", "Matrix", "Legit",  "AEMine", "Hycraft"), "Cancel") // later
-    
+        "Reverse", "SmoothReverse", "Jump", "Glitch", "Phase", "Matrix", "Legit",  "AEMine", "Hycraft", "universocraftold"), "Cancel") // later
+
     private val aac5KillAuraValue = BoolValue("AAC5.2.0-Attack-Only", true, { modeValue.get().equals("aac5.2.0", true) })
 
     // Affect chance
     private val reduceChance = FloatValue("Reduce-Chance", 100F, 0F, 100F, "%")
     private var shouldAffect : Boolean = true
+
+
 
     // Reverse
     private val reverseStrengthValue = FloatValue("ReverseStrength", 1F, 0.1F, 1F, "x", { modeValue.get().equals("reverse", true) })
@@ -66,7 +63,7 @@ class Velocity : Module() {
 
     // Hycraft
     private val hycraftPacketY = ListValue("Hycraft-YPacketMode", arrayOf("Up", "Down", "None"), "Down") // i was testing
-    
+
     //add strafe in aac
     private val aacStrafeValue = BoolValue("AACStrafeValue", false, { modeValue.get().equals("aac", true) })
 
@@ -94,12 +91,12 @@ class Velocity : Module() {
     override fun onDisable() {
         mc.thePlayer?.speedInAir = 0.02F
     }
-/* 
-    override fun onEnable() {
-        if (modeValue.get().equals("simple", true) && horizontalValue.get() == 0F && verticalValue.get() == 0F && !LiquidBounce.isStarting)
-            LiquidBounce.hud.addNotification(Notification("Trying to cancel knockback? Consider using Cancel mode.", 2000L))
-    }
-*/
+    /*
+        override fun onEnable() {
+            if (modeValue.get().equals("simple", true) && horizontalValue.get() == 0F && verticalValue.get() == 0F && !LiquidBounce.isStarting)
+                LiquidBounce.hud.addNotification(Notification("Trying to cancel knockback? Consider using Cancel mode.", 2000L))
+        }
+    */
     @EventTarget
     fun onUpdate(event: UpdateEvent) {
         if (mc.thePlayer.hurtTime <= 0) shouldAffect = (Math.random().toFloat() < reduceChance.get() / 100F)
@@ -155,7 +152,7 @@ class Velocity : Module() {
                     velocityInput = false
                 }
             }
-            
+
             "aac5reduce" -> {
                 if (mc.thePlayer.hurtTime>1 && velocityInput){
                     mc.thePlayer.motionX *= 0.81
@@ -183,7 +180,7 @@ class Velocity : Module() {
                     reverseHurt = false
                 }
             }
-            
+
             "aac" -> if (velocityInput && velocityTimer.hasTimePassed(50)) {
                 mc.thePlayer.motionX *= horizontalValue.get()
                 mc.thePlayer.motionZ *= horizontalValue.get()
@@ -205,7 +202,7 @@ class Velocity : Module() {
 
                     // Reduce Y
                     if (mc.thePlayer.hurtResistantTime > 0 && aacPushYReducerValue.get()
-                            && !LiquidBounce.moduleManager[Speed::class.java]!!.state)
+                        && !LiquidBounce.moduleManager[Speed::class.java]!!.state)
                         mc.thePlayer.motionY -= 0.014999993
                 }
 
@@ -230,12 +227,12 @@ class Velocity : Module() {
             "matrix" -> {
                 if (mc.thePlayer.hurtTime <= 0) {
                     return
-                } 
+                }
                 if (mc.thePlayer.onGround) {
                     if (mc.thePlayer.hurtTime <= 6) {
                         mc.thePlayer.motionX *= 0.700054132
                         mc.thePlayer.motionZ *= 0.700054132
-                    } 
+                    }
                     if (mc.thePlayer.hurtTime <= 5) {
                         mc.thePlayer.motionX *= 0.803150645
                         mc.thePlayer.motionZ *= 0.803150645
@@ -243,13 +240,13 @@ class Velocity : Module() {
                 } else if (mc.thePlayer.hurtTime <= 10) {
                     mc.thePlayer.motionX *= 0.605001
                     mc.thePlayer.motionZ *= 0.605001
-               }
+                }
             }
 
             "aemine" -> {
                 if (mc.thePlayer.hurtTime <= 0) {
                     return
-                } 
+                }
                 if (mc.thePlayer.hurtTime >= 6) {
                     mc.thePlayer.motionX *= 0.605001
                     mc.thePlayer.motionZ *= 0.605001
@@ -307,15 +304,31 @@ class Velocity : Module() {
                     event.cancelEvent()
                 }
 
+                "universocraftold" -> {
+                    val packet = event.packet
+                    if (packet is S12PacketEntityVelocity) {
+                        if (packet.entityID == mc.thePlayer.entityId) {
+                            event.cancelEvent()
+                            mc.thePlayer.motionY += 0.1 - Math.random() / 100.0
+                        }
+                    }
+                    if (packet is S27PacketExplosion) {
+                        event.cancelEvent()
+                        mc.thePlayer.motionY += 0.1 - Math.random() / 100.0
+                    }
+                }
+
+
                 "hycraft" -> {
                     when (hycraftPacketY.get().lowercase()) {
-                      "up" -> mc.netHandler.addToSendQueue(C03PacketPlayer.C04PacketPlayerPosition(mc.thePlayer.posX,mc.thePlayer.posY + 1,mc.thePlayer.posZ,true))
-                      "down" -> mc.netHandler.addToSendQueue(C03PacketPlayer.C04PacketPlayerPosition(mc.thePlayer.posX,mc.thePlayer.posY - 1,mc.thePlayer.posZ,true))
-                      "none" -> mc.netHandler.addToSendQueue(C03PacketPlayer.C04PacketPlayerPosition(mc.thePlayer.posX,mc.thePlayer.posY,mc.thePlayer.posZ,true))
+                        "up" -> mc.netHandler.addToSendQueue(C03PacketPlayer.C04PacketPlayerPosition(mc.thePlayer.posX,mc.thePlayer.posY + 1,mc.thePlayer.posZ,true))
+                        "down" -> mc.netHandler.addToSendQueue(C03PacketPlayer.C04PacketPlayerPosition(mc.thePlayer.posX,mc.thePlayer.posY - 1,mc.thePlayer.posZ,true))
+                        "none" -> mc.netHandler.addToSendQueue(C03PacketPlayer.C04PacketPlayerPosition(mc.thePlayer.posX,mc.thePlayer.posY,mc.thePlayer.posZ,true))
                     }
                     packet.motionX = (packet.getMotionX() * 0F).toInt()
                     packet.motionZ = (packet.getMotionZ() * 0F).toInt()
                 }
+
                 "phase" -> mc.thePlayer.setPositionAndUpdate(mc.thePlayer.posX, mc.thePlayer.posY + phaseOffsetValue.get().toDouble(), mc.thePlayer.posZ)
 
                 "legit" -> {
@@ -398,3 +411,5 @@ class Velocity : Module() {
         }
     }
 }
+
+

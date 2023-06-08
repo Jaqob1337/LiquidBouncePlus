@@ -16,7 +16,32 @@ import org.json.JSONObject
 import java.io.IOException
 import java.time.OffsetDateTime
 import kotlin.concurrent.thread
-
+import net.ccbluex.liquidbounce.discord.ClientRichPresence
+import net.ccbluex.liquidbounce.event.ClientShutdownEvent
+import net.ccbluex.liquidbounce.event.EventManager
+import net.ccbluex.liquidbounce.features.command.CommandManager
+import net.ccbluex.liquidbounce.features.module.ModuleManager
+import net.ccbluex.liquidbounce.features.special.AntiForge
+import net.ccbluex.liquidbounce.features.special.BungeeCordSpoof
+import net.ccbluex.liquidbounce.features.special.MacroManager
+import net.ccbluex.liquidbounce.file.FileManager
+import net.ccbluex.liquidbounce.script.ScriptManager
+import net.ccbluex.liquidbounce.script.remapper.Remapper.loadSrg
+import net.ccbluex.liquidbounce.tabs.*
+import net.ccbluex.liquidbounce.ui.client.altmanager.GuiAltManager
+import net.ccbluex.liquidbounce.ui.client.clickgui.ClickGui
+import net.ccbluex.liquidbounce.ui.client.hud.HUD
+import net.ccbluex.liquidbounce.ui.client.hud.HUD.Companion.createDefault
+import net.ccbluex.liquidbounce.ui.font.Fonts
+import net.ccbluex.liquidbounce.utils.ClassUtils.hasForge
+import net.ccbluex.liquidbounce.utils.InventoryHelper
+import net.ccbluex.liquidbounce.utils.InventoryUtils
+import net.ccbluex.liquidbounce.utils.PacketUtils
+import net.ccbluex.liquidbounce.utils.RotationUtils
+import net.ccbluex.liquidbounce.utils.SessionUtils
+import net.ccbluex.liquidbounce.utils.misc.sound.TipSoundManager
+import net.minecraft.util.ResourceLocation
+import kotlin.concurrent.thread
 import org.lwjgl.opengl.Display
 
 class ClientRichPresence : MinecraftInstance() {

@@ -57,11 +57,12 @@ class GuiAltManager(private val prevGui: GuiScreen) : GuiScreen() {
         val textFieldWidth = (width / 8).coerceAtLeast(70)
         searchField = GuiTextField(2, Fonts.font40, width - textFieldWidth - 10, 10, textFieldWidth, 20)
         searchField.maxStringLength = Int.MAX_VALUE
-        
+
         altsList = GuiList(this)
         altsList.registerScrollButtons(7, 8)
-        
-        val mightBeTheCurrentAccount = fileManager.accountsConfig.accounts.indexOfFirst { it.name == mc.session.username }
+
+        val mightBeTheCurrentAccount =
+            fileManager.accountsConfig.accounts.indexOfFirst { it.name == mc.session.username }
         altsList.elementClicked(mightBeTheCurrentAccount, false, 0, 0)
         altsList.scrollBy(mightBeTheCurrentAccount * altsList.getSlotHeight())
 
@@ -73,19 +74,23 @@ class GuiAltManager(private val prevGui: GuiScreen) : GuiScreen() {
         buttonList.add(GuiButton(7, width - 80, startPositionY + 24 * 3, 70, 20, "Import"))
         buttonList.add(GuiButton(12, width - 80, startPositionY + 24 * 4, 70, 20, "Export"))
         buttonList.add(GuiButton(8, width - 80, startPositionY + 24 * 5, 70, 20, "Copy"))
-        buttonList.add(GuiButton(727, width - 80, startPositionY + 24 * 6, 70, 20, "Revert").also { revertOriginalAccount = it })
+        buttonList.add(
+            GuiButton(
+                727,
+                width - 80,
+                startPositionY + 24 * 6,
+                0,
+                0,
+                " "
+            ).also { revertOriginalAccount = it })
         buttonList.add(GuiButton(0, width - 80, height - 65, 70, 20, "Back"))
         buttonList.add(GuiButton(3, 5, startPositionY + 24, 90, 20, "Login").also { loginButton = it })
         buttonList.add(GuiButton(4, 5, startPositionY + 24 * 2, 90, 20, "Random").also { randomButton = it })
-        buttonList.add(GuiButton(99, 5, startPositionY + 24 * 3, 90, 20, "Cracked").also { randomCracked = it })
+        buttonList.add(GuiButton(99, 5, startPositionY + 24 * 3, 90, 20, "Random Cracked").also { randomCracked = it })
         buttonList.add(GuiButton(6, 5, startPositionY + 24 * 4, 90, 20, "Direct Login"))
-        buttonList.add(GuiButton(10, 5, startPositionY + 24 * 5, 90, 20, "Session Login"))
-        buttonList.add(GuiButton(88, 5, startPositionY + 24 * 6, 90, 20, "Change Name"))
 
-        if (activeGenerators.getOrDefault("thealtening", true))
-            buttonList.add(GuiButton(9, 5, startPositionY + 24 * 7, 90, 20, "TheAltening"))
+
     }
-
     override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {
         revertOriginalAccount.enabled = (lastSessionToken != null)
         drawBackground(0)

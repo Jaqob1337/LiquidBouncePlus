@@ -48,7 +48,11 @@ import net.minecraft.stats.StatList;
 import net.minecraft.util.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
-
+import net.minecraft.network.play.client.C03PacketPlayer;
+import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
+import net.minecraft.network.play.client.C09PacketHeldItemChange;
+import net.minecraft.network.play.client.C0APacketAnimation;
+import net.minecraft.network.play.client.C0BPacketEntityAction;
 import java.awt.*;
 
 @ModuleInfo(name = "Scaffold", description = "Automatically places blocks beneath your feet.", category = ModuleCategory.WORLD, keyBind = Keyboard.KEY_I)
@@ -62,6 +66,9 @@ public class Scaffold extends Module {
     private final ListValue towerModeValue = new ListValue("TowerMode", new String[] {
             "Jump", "Motion", "StableMotion", "ConstantMotion", "MotionTP", "Packet", "Teleport", "AAC3.3.9", "AAC3.6.4", "Verus"
     }, "Motion", () -> towerEnabled.get());
+
+    private final ListValue extraClickValue = new ListValue("ExtraClick", new String[]{"EmptyC08", "AfterPlace", "RayTrace", "OFF"}, "OFF");
+
     private final ListValue towerPlaceModeValue = new ListValue("Tower-PlaceTiming", new String[]{"Pre", "Post"}, "Post");
     private final BoolValue stopWhenBlockAbove = new BoolValue("StopWhenBlockAbove", false, () -> towerEnabled.get());
     private final BoolValue onJumpValue = new BoolValue("OnJump", false, () -> towerEnabled.get());

@@ -177,7 +177,7 @@ class KillAura : Module() {
 
     private val silentRotationValue = BoolValue("SilentRotation", true, { !rotations.get().equals("none", true) })
     val rotationStrafeValue = ListValue("Strafe", arrayOf("Off", "Strict", "Silent"), "Off")
-    
+
     private val fovValue = FloatValue("FOV", 180f, 0f, 180f)
 
     // Predict
@@ -402,9 +402,9 @@ class KillAura : Module() {
     @EventTarget
     fun onPacket(event: PacketEvent) {
         val packet = event.packet
-        if (verusBlocking 
-            && ((packet is C07PacketPlayerDigging 
-                    && packet.getStatus() == C07PacketPlayerDigging.Action.RELEASE_USE_ITEM) 
+        if (verusBlocking
+            && ((packet is C07PacketPlayerDigging
+                    && packet.getStatus() == C07PacketPlayerDigging.Action.RELEASE_USE_ITEM)
                     || packet is C08PacketPlayerBlockPlacement)
             && verusAutoBlockValue.get())
             event.cancelEvent()
@@ -444,7 +444,7 @@ class KillAura : Module() {
             verusBlocking = true
         else if (verusBlocking) {
             verusBlocking = false
-            if (verusAutoBlockValue.get()) 
+            if (verusAutoBlockValue.get())
                 PacketUtils.sendPacketNoEvent(C07PacketPlayerDigging(C07PacketPlayerDigging.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, EnumFacing.DOWN))
         }
     }
@@ -724,12 +724,12 @@ class KillAura : Module() {
         // Stop blocking
         if (mc.thePlayer.isBlocking || blockingStatus)
             stopBlocking()
-            
+
         // Call attack event
         LiquidBounce.eventManager.callEvent(AttackEvent(entity))
 
         markEntity = entity
-            
+
         // Get rotation and send packet if possible
         if (rotations.get().equals("spin", true) && !noSendRot.get())
         {
@@ -743,7 +743,7 @@ class KillAura : Module() {
         // Attack target
         if (swingValue.get() && (!swingOrderValue.get() || ViaForge.getInstance().getVersion() <= 47)) // version fix
             mc.thePlayer.swingItem()
-    
+
         mc.netHandler.addToSendQueue(C02PacketUseEntity(entity, C02PacketUseEntity.Action.ATTACK))
 
         if (swingValue.get() && swingOrderValue.get() && ViaForge.getInstance().getVersion() > 47)
@@ -778,7 +778,7 @@ class KillAura : Module() {
         }
 
         // Start blocking after attack
-        if ((!afterTickPatchValue.get() || !autoBlockModeValue.get().equals("AfterTick", true)) && (mc.thePlayer.isBlocking || canBlock)) 
+        if ((!afterTickPatchValue.get() || !autoBlockModeValue.get().equals("AfterTick", true)) && (mc.thePlayer.isBlocking || canBlock))
             startBlocking(entity, interactAutoBlockValue.get())
     }
 
@@ -788,10 +788,7 @@ class KillAura : Module() {
     private fun updateRotations(entity: Entity): Boolean {
         if (rotations.get().equals("none", true)) return true
 
-        val disabler = LiquidBounce.moduleManager.getModule(Disabler::class.java)!! as Disabler
-        val modify = disabler.canModifyRotation
 
-        if (modify) return true // just ignore then
 
         var defRotation = getTargetRotation(entity) ?: return false
 
@@ -927,10 +924,6 @@ class KillAura : Module() {
         }
 
         // Completely disable rotation check if turn speed equals to 0 or NoHitCheck is enabled
-        if(maxTurnSpeed.get() <= 0F || noHitCheck.get() || disabler.canModifyRotation) {
-            hitable = true
-            return
-        }
 
         val reach = min(maxRange.toDouble(), mc.thePlayer.getDistanceToEntityBox(target!!)) + 1
 
@@ -1019,7 +1012,7 @@ class KillAura : Module() {
                 mc.netHandler.addToSendQueue(C07PacketPlayerDigging(C07PacketPlayerDigging.Action.RELEASE_USE_ITEM, BlockPos(1.0, 1.0, 1.0), EnumFacing.DOWN))
             else
                 mc.netHandler.addToSendQueue(C07PacketPlayerDigging(C07PacketPlayerDigging.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, EnumFacing.DOWN))
-            
+
             blockingStatus = false
         }
     }
@@ -1029,7 +1022,7 @@ class KillAura : Module() {
      */
     private val cancelRun: Boolean
         get() = mc.thePlayer.isSpectator || !isAlive(mc.thePlayer)
-                || (blinkCheck.get() && LiquidBounce.moduleManager[Blink::class.java]!!.state) || LiquidBounce.moduleManager[FreeCam::class.java]!!.state || 
+                || (blinkCheck.get() && LiquidBounce.moduleManager[Blink::class.java]!!.state) || LiquidBounce.moduleManager[FreeCam::class.java]!!.state ||
                 (noScaffValue.get() && LiquidBounce.moduleManager[Scaffold::class.java]!!.state)
 
     /**

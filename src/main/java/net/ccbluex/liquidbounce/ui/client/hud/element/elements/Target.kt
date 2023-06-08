@@ -51,7 +51,7 @@ class Target : Element() {
     val shadowColorBlueValue = IntegerValue("Shadow-Blue", 255, 0, 255, { shadowValue.get() && shadowColorMode.get().equals("custom", true) })
 
     val fadeValue = BoolValue("FadeAnim", false)
-    val fadeSpeed = FloatValue("Fade-Speed", 1F, 0F, 5F, { fadeValue.get() })
+    val fadeSpeed = FloatValue("Fade-Speed", 1F, 1F, 5F, { fadeValue.get() })
 
     val noAnimValue = BoolValue("No-Animation", false)
     val globalAnimSpeed = FloatValue("Global-AnimSpeed", 3F, 1F, 9F, { !noAnimValue.get() })

@@ -1,4 +1,4 @@
-#version 120 
+#version 120
 
 void main(void) {
     //Map gl_MultiTexCoord0 to index zero of gl_TexCoord

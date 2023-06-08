@@ -23,21 +23,24 @@ public final class BackgroundShader extends Shader {
 
     @Override
     public void setupUniforms() {
-        setupUniform("iResolution");
-        setupUniform("iTime");
+        setupUniform("resolution");
+        setupUniform("time");
     }
+
+
 
     @Override
     public void updateUniforms() {
         final ScaledResolution scaledResolution = new ScaledResolution(mc);
 
-        final int resolutionID = getUniform("iResolution");
+        final int resolutionID = getUniform("resolution");
         if(resolutionID > -1)
-            GL20.glUniform2f(resolutionID, (float) Display.getWidth(), (float) Display.getHeight());
-        final int timeID = getUniform("iTime");
+            GL20.glUniform2f(resolutionID, (float) scaledResolution.getScaledWidth(), (float) scaledResolution.getScaledHeight());
+        final int timeID = getUniform("time");
         if(timeID > -1) GL20.glUniform1f(timeID, time);
 
         time += 0.005F * RenderUtils.deltaTime;
     }
+
 
 }

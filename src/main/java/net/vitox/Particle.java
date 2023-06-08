@@ -19,8 +19,8 @@ class Particle {
     public float x;
     public float y;
     public final float size;
-    private final float ySpeed = new Random().nextInt(5);
-    private final float xSpeed = new Random().nextInt(5);
+    private final float ySpeed = (-0.000000000000000000000000000000000000000000001f);
+    private final float xSpeed = (0);
     private int height;
     private int width;
 
@@ -91,18 +91,14 @@ class Particle {
         final Minecraft mc = Minecraft.getMinecraft();
         final ScaledResolution scaledResolution = new ScaledResolution(mc);
         y = (y + ySpeed);
-        x = (x + xSpeed);
 
         if(y > mc.displayHeight)
-            y = 1;
-
-        if(x > mc.displayWidth)
-            x = 1;
+            y = 0;
 
         if(x < 1)
             x = scaledResolution.getScaledWidth();
 
-        if(y < 1)
+        if(y < -0.00001)
             y = scaledResolution.getScaledHeight();
     }
     
@@ -113,12 +109,10 @@ class Particle {
         x = (x + xSpeed);
         
         if(x > mc.displayWidth)
-            x = 1;
-            y -= 1;
+            x = 1;y -= 1;
 
         if(x < 1)
-            x = scaledResolution.getScaledWidth();
-            y -= 1;
+            x = scaledResolution.getScaledWidth();y -= 1;
     }
 
     private float genRandom() {

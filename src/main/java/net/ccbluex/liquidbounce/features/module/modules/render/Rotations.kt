@@ -60,7 +60,6 @@ class Rotations : Module() {
         return getState(Scaffold::class.java) || 
                 (getState(Sprint::class.java) && sprint.allDirectionsValue.get() && sprint.moveDirPatchValue.get()) ||
                 (getState(KillAura::class.java) && killAura.target != null) ||
-                (getState(Disabler::class.java) && disabler.canRenderInto3D) ||
                 getState(BowAimbot::class.java) || getState(Fucker::class.java) ||
                 getState(ChestAura::class.java) || getState(Fly::class.java)
     }

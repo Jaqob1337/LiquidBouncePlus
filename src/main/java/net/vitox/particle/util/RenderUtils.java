@@ -1,6 +1,8 @@
 package net.vitox.particle.util;
 
 import static org.lwjgl.opengl.GL11.*;
+import java.awt.Color;
+
 
 public class RenderUtils {
 

@@ -8,15 +8,12 @@ package net.ccbluex.liquidbounce.ui.client
 import net.ccbluex.liquidbounce.LiquidBounce
 import net.ccbluex.liquidbounce.ui.client.altmanager.GuiAltManager
 import net.ccbluex.liquidbounce.ui.font.Fonts
-import net.ccbluex.liquidbounce.utils.AnimationUtils
 import net.ccbluex.liquidbounce.utils.ClientUtils
 import net.ccbluex.liquidbounce.utils.misc.MiscUtils
 import net.ccbluex.liquidbounce.utils.render.RenderUtils
-import net.ccbluex.liquidbounce.utils.render.EaseUtils
 import net.minecraft.client.gui.*
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.DynamicTexture
-import net.minecraft.client.resources.I18n
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.client.GuiModList
 import java.awt.Color
@@ -24,9 +21,9 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.file.Files
 import javax.imageio.ImageIO
-
 import org.lwjgl.opengl.GL11
 import kotlin.concurrent.thread
+import kotlin.math.sin
 
 class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
 
@@ -62,6 +59,7 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
 
     override fun drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float) {
         if (!alrUpdate) {
+            renderParticlesSwitchButton()
             lastAnimTick = System.currentTimeMillis()
             alrUpdate = true
         }
@@ -70,21 +68,21 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
         GL11.glPushMatrix()
         renderSwitchButton()
         renderDarkModeButton()
-        Fonts.font40.drawStringWithShadow("LiquidBounce++ b${LiquidBounce.CLIENT_VERSION} | lbplusplus.ga", 2F, height - 12F, -1)
+        Fonts.font40.drawStringWithShadow("Paradox b${LiquidBounce.CLIENT_VERSION} | https://discord.gg/QCnuFpWA", 2F, height - 12F, -1)
         Fonts.font40.drawStringWithShadow(creditInfo, width - 3F - Fonts.font40.getStringWidth(creditInfo), height - 12F, -1)
         if (useParallax) moveMouseEffect(mouseX, mouseY, 10F)
         GlStateManager.disableAlpha()
-        RenderUtils.drawImage2(bigLogo, width / 2F - 50F, height / 2F - 90F, 100, 100)
+        RenderUtils.drawImage2(bigLogo, width / 2F - 100F, height / 2F - 180F, 200, 200)
         GlStateManager.enableAlpha()
         renderBar(mouseX, mouseY, partialTicks)
         GL11.glPopMatrix()
         super.drawScreen(mouseX, mouseY, partialTicks)
-        
+
         if (!LiquidBounce.mainMenuPrep) {
             val animProgress = ((System.currentTimeMillis() - lastAnimTick).toFloat() / 1500F).coerceIn(0F, 1F)
             RenderUtils.drawRect(0F, 0F, width.toFloat(), height.toFloat(), Color(0F, 0F, 0F, 1F - animProgress))
             if (animProgress >= 1F)
-                LiquidBounce.mainMenuPrep = true    
+                LiquidBounce.mainMenuPrep = true
         }
     }
 
@@ -95,7 +93,10 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
             useParallax = !useParallax
 
         if (isMouseHover(2F, height - 38F, 28F, height - 28F, mouseX, mouseY))
-            LiquidBounce.darkMode = !LiquidBounce.darkMode
+            GuiBackground.particles = !GuiBackground.particles
+
+        if (isMouseHover(2F, height - 50F, 28F, height - 40F, mouseX, mouseY))
+            GuiBackground.particles = !GuiBackground.particles
 
         val staticX = width / 2F - 120F
         val staticY = height / 2F + 20F
@@ -149,7 +150,7 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
                     } else if (extendedModMode) extendedBackgroundMode = true else extendedModMode = true
                     5 -> mc.shutdown()
                 }
-            
+
             index++
         }
 
@@ -161,7 +162,7 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
         val mY = mouseY - height / 2
         val xDelta = mX.toFloat() / (width / 2).toFloat()
         val yDelta = mY.toFloat() / (height / 2).toFloat()
-        
+
         GL11.glTranslatef(xDelta * strength, yDelta * strength, 0F)
     }
 
@@ -173,113 +174,122 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
     }
 
     fun renderDarkModeButton() {
-        sliderDarkX = (sliderDarkX + (if (LiquidBounce.darkMode) 2F else -2F)).coerceIn(0F, 12F)
-        GlStateManager.disableAlpha()
-        RenderUtils.drawImage3(darkIcon, 28F, height - 40F, 14, 14, 1F, 1F, 1F, sliderDarkX / 12F)
-        RenderUtils.drawImage3(lightIcon, 28F, height - 40F, 14, 14, 1F, 1F, 1F, 1F - (sliderDarkX / 12F))
-        GlStateManager.enableAlpha()
-        RenderUtils.drawRoundedRect(4F, height - 36F, 22F, height - 30F, 3F, (if (LiquidBounce.darkMode) Color(70, 70, 70, 255) else Color(140, 140, 140, 255)).rgb)
+        sliderDarkX = (sliderDarkX + (if (GuiBackground.particles) 2F else -2F)).coerceIn(0F, 12F)
+        Fonts.font40.drawStringWithShadow("Particles", 28F, height - 37F, 0)
+        RenderUtils.drawRoundedRect(4F, height - 36F, 22F, height - 30F, 3F, (if (GuiBackground.particles) Color(70, 70, 70, 255) else Color(140, 140, 140, 255)).rgb)
         RenderUtils.drawRoundedRect(2F + sliderDarkX, height - 38F, 12F + sliderDarkX, height - 28F, 5F, Color.white.rgb)
+    }
+
+    var sliderParticlesX : Float = 0F
+
+    fun renderParticlesSwitchButton() {
+        sliderParticlesX = (sliderParticlesX + (if (GuiBackground.particles) 2F else -2F)).coerceIn(0F, 12F)
+        Fonts.font40.drawStringWithShadow("Particles", 28F, height - 50F, -1)
+        RenderUtils.drawRoundedRect(4F, height - 48F, 22F, height - 42F, 3F, if (GuiBackground.particles) Color(0, 111, 255, 255).rgb else (if (LiquidBounce.darkMode) Color(70, 70, 70, 255) else Color(140, 140, 140, 255)).rgb)
+        RenderUtils.drawRoundedRect(2F + sliderParticlesX, height - 50F, 12F + sliderParticlesX, height - 40F, 5F, Color.white.rgb)
     }
 
     fun renderBar(mouseX: Int, mouseY: Int, partialTicks: Float) {
         val staticX = width / 2F - 120F
         val staticY = height / 2F + 20F
 
-        RenderUtils.drawRect(staticX, staticY, staticX + 240F, staticY + 20F, (if (LiquidBounce.darkMode) Color(0, 0, 0, 100) else Color(255, 255, 255, 100)).rgb)
-        
-        var index: Int = 0
+        RenderUtils.drawRect(
+            staticX.toDouble(),
+            staticY.toDouble(),
+            (staticX + 240F).toDouble(),
+            (staticY + 20F).toDouble(),
+            if (LiquidBounce.darkMode) Color(0, 0, 0, 0).rgb else Color(255, 255, 255, 0).rgb
+        )
+
+        var index = 0
         var shouldAnimate = false
         var displayString: String? = null
         var moveX = 0F
+        val iconSize = 22F
+
         if (extendedModMode) {
-            if (extendedBackgroundMode)
+            if (extendedBackgroundMode) {
                 for (icon in ExtendedBackgroundButton.values()) {
-                    if (isMouseHover(staticX + 40F * index, staticY, staticX + 40F * (index + 1), staticY + 20F, mouseX, mouseY)) {
+                    val iconX = staticX + 40F * index + 11F
+                    val iconY = staticY + 1F
+                    val isMouseOver = isMouseHover(iconX, iconY, iconX + iconSize, iconY + iconSize, mouseX, mouseY)
+
+                    val scaleFactor =
+                        if (isMouseOver) 1F + sin(System.currentTimeMillis() / 500.0).toFloat() * 0.1F else 1F // Smooth animation using sine function only when hovering
+
+                    if (isMouseOver) {
                         shouldAnimate = true
-                        displayString = if (icon == ExtendedBackgroundButton.Enabled) 
-                                            "Custom background: ${if (GuiBackground.enabled) "§aON" else "§cOFF"}" 
-                                        else if (icon == ExtendedBackgroundButton.Particles) 
-                                            "${icon.buttonName}: ${if (GuiBackground.particles) "§aON" else "§cOFF"}" 
-                                        else 
-                                            icon.buttonName
+                        displayString = when (icon) {
+                            ExtendedBackgroundButton.Enabled -> "Custom background: ${if (GuiBackground.enabled) "§aON" else "§cOFF"}"
+                            ExtendedBackgroundButton.Particles -> "${icon.buttonName}: ${if (GuiBackground.particles) "§aON" else "§cOFF"}"
+                            else -> icon.buttonName
+                        }
                         moveX = staticX + 40F * index
                     }
+
+                    GlStateManager.pushMatrix()
+                    GlStateManager.translate(iconX, iconY, 0F)
+                    GlStateManager.scale(scaleFactor, scaleFactor, 1F)
+                    GlStateManager.translate(-iconX, -iconY, 0F)
+                    RenderUtils.drawImage2(icon.texture, iconX, iconY, iconSize.toInt(), iconSize.toInt())
+                    GlStateManager.popMatrix()
+
                     index++
                 }
-            else
+            } else {
                 for (icon in ExtendedImageButton.values()) {
-                    if (isMouseHover(staticX + 40F * index, staticY, staticX + 40F * (index + 1), staticY + 20F, mouseX, mouseY)) {
+                    val iconX = staticX + 40F * index + 11F
+                    val iconY = staticY + 1F
+                    val isMouseOver = isMouseHover(iconX, iconY, iconX + iconSize, iconY + iconSize, mouseX, mouseY)
+
+                    val scaleFactor =
+                        if (isMouseOver) 1F + sin(System.currentTimeMillis() / 700.0).toFloat() * 0.2F else 1F // Smooth animation using sine function only when hovering
+
+                    if (isMouseOver) {
                         shouldAnimate = true
-                        displayString = if (icon == ExtendedImageButton.DiscordRPC) "${icon.buttonName}: ${if (LiquidBounce.clientRichPresence.showRichPresenceValue) "§aON" else "§cOFF"}" else icon.buttonName
+                        displayString =
+                            if (icon == ExtendedImageButton.DiscordRPC) "${icon.buttonName}: ${if (LiquidBounce.clientRichPresence.showRichPresenceValue) "§aON" else "§cOFF"}" else icon.buttonName
                         moveX = staticX + 40F * index
                     }
+
+                    GlStateManager.pushMatrix()
+                    GlStateManager.translate(iconX, iconY, 0F)
+                    GlStateManager.scale(scaleFactor, scaleFactor, 1.2F)
+                    GlStateManager.translate(-iconX, -iconY, 0F)
+                    RenderUtils.drawImage2(icon.texture, iconX, iconY, iconSize.toInt(), iconSize.toInt())
+                    GlStateManager.popMatrix()
+
                     index++
                 }
-        } else
-            for (icon in ImageButton.values()) {
-                if (isMouseHover(staticX + 40F * index, staticY, staticX + 40F * (index + 1), staticY + 20F, mouseX, mouseY)) {
+            }
+        } else {
+            for (i in ImageButton.values()) {
+                val iconX = staticX + 40F * index + 11F
+                val iconY = staticY + 1F
+                val isMouseOver = isMouseHover(iconX, iconY, iconX + iconSize, iconY + iconSize, mouseX, mouseY)
+
+                val scaleFactor =
+                    if (isMouseOver) 1.04F + sin(System.currentTimeMillis() / 6000.0).toFloat() * 0.1F else 1.06F // Smooth animation using sine function only when hovering
+
+                if (isMouseOver) {
                     shouldAnimate = true
-                    displayString = icon.buttonName
-                    moveX = staticX + 40F * index
+                    displayString = i.buttonName
+                    moveX = staticX + 0F * index
                 }
+
+                GlStateManager.pushMatrix()
+                GlStateManager.translate(iconX, iconY, 0F)
+                GlStateManager.scale(scaleFactor, scaleFactor, 1F)
+                GlStateManager.translate(-iconX, -iconY, 0F)
+                RenderUtils.drawImage2(i.texture, iconX, iconY, iconSize.toInt(), iconSize.toInt())
+                GlStateManager.popMatrix()
+
                 index++
             }
-
-        if (displayString != null)
-            Fonts.font35.drawCenteredString(displayString!!, width / 2F, staticY + 30F, -1)
-        else
-            Fonts.font35.drawCenteredString("hi", width / 2F, staticY + 30F, -1)
-
-        if (shouldAnimate) {
-            if (fade == 0F)
-                slideX = moveX
-            else
-                slideX = AnimationUtils.animate(moveX, slideX, 0.5F * (1F - partialTicks))
-
-            lastXPos = moveX
-
-            fade += 10F
-            if (fade >= 100F) fade = 100F
-        } else {
-            fade -= 10F
-            if (fade <= 0F) fade = 0F
-
-            slideX = AnimationUtils.animate(lastXPos, slideX, 0.5F * (1F - partialTicks))
         }
 
-        if (fade != 0F)
-            RenderUtils.drawRect(slideX, staticY, slideX + 40F, staticY + 20F, (if (LiquidBounce.darkMode) Color(0F, 0F, 0F, fade / 100F * 0.6F) else Color(1F, 1F, 1F, fade / 100F * 0.6F)).rgb)
-
-        index = 0
-        GlStateManager.disableAlpha()
-        if (extendedModMode) {
-            if (extendedBackgroundMode)
-                for (i in ExtendedBackgroundButton.values()) {
-                    if (LiquidBounce.darkMode)
-                        RenderUtils.drawImage2(i.texture, staticX + 40F * index + 11F, staticY + 1F, 18, 18)
-                    else
-                        RenderUtils.drawImage3(i.texture, staticX + 40F * index + 11F, staticY + 1F, 18, 18, 0F, 0F, 0F, 1F)
-                    index++
-                }
-            else
-                for (i in ExtendedImageButton.values()) {
-                    if (LiquidBounce.darkMode)
-                        RenderUtils.drawImage2(i.texture, staticX + 40F * index + 11F, staticY + 1F, 18, 18)
-                    else
-                        RenderUtils.drawImage3(i.texture, staticX + 40F * index + 11F, staticY + 1F, 18, 18, 0F, 0F, 0F, 1F)
-                    index++
-                }
-        } else
-            for (i in ImageButton.values()) {
-                if (LiquidBounce.darkMode)
-                    RenderUtils.drawImage2(i.texture, staticX + 40F * index + 11F, staticY + 1F, 18, 18)
-                else
-                    RenderUtils.drawImage3(i.texture, staticX + 40F * index + 11F, staticY + 1F, 18, 18, 0F, 0F, 0F, 1F)
-                index++
-            }
-        GlStateManager.enableAlpha()
     }
+
 
     fun isMouseHover(x: Float, y: Float, x2: Float, y2: Float, mouseX: Int, mouseY: Int): Boolean = mouseX >= x && mouseX < x2 && mouseY >= y && mouseY < y2
 
@@ -308,6 +318,10 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
         Change("Change wallpaper", ResourceLocation("liquidbounce+/clickgui/import.png")),
         Reset("Reset wallpaper", ResourceLocation("liquidbounce+/clickgui/reload.png")),
         Exit("Exit", ResourceLocation("liquidbounce+/menu/exit.png"))
+    }
+
+    fun isMouseOverIcon(mouseX: Int, mouseY: Int, iconX: Float, iconY: Float, iconWidth: Float, iconHeight: Float): Boolean {
+        return mouseX in iconX.toInt()..(iconX + iconWidth).toInt() && mouseY in iconY.toInt()..(iconY + iconHeight).toInt()
     }
 
     override fun keyTyped(typedChar: Char, keyCode: Int) {}

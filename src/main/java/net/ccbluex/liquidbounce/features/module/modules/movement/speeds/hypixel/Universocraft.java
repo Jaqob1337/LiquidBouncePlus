@@ -12,10 +12,10 @@ import net.ccbluex.liquidbounce.event.MoveEvent;
 import net.ccbluex.liquidbounce.features.module.modules.movement.speeds.SpeedMode;
 import net.ccbluex.liquidbounce.utils.MovementUtils;
 
-public class HypixelStable extends SpeedMode {
+public class Universocraft extends SpeedMode {
 
-    public HypixelStable() {
-        super("HypixelStable");
+    public Universocraft() {
+        super("Universocraft");
     }
 
     @Override

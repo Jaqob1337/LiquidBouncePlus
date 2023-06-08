@@ -36,15 +36,15 @@ import kotlin.concurrent.thread
 object LiquidBounce {
 
     // Client information
-    const val CLIENT_NAME = "LiquidBounce++"
-    const val CLIENT_VERSION = "0.3"
-    const val CLIENT_CREATOR = "CCBlueX, exit-scammed, and PlusPlusMC"
+    const val CLIENT_NAME = "Paradox"
+    const val CLIENT_VERSION = "0.1"
+    const val CLIENT_CREATOR = "CCBlueX, exit-scammed, and PlusPlusMC, Jakob"
     const val CLIENT_CLOUD = "https://plusplusmc.github.io/Cloud/LiquidBounce/"
 
     var isStarting = false
     var mainMenuPrep = false
 
-    var darkMode: Boolean = false
+    var darkMode: Boolean = true
 
     // Managers
     lateinit var moduleManager: ModuleManager
