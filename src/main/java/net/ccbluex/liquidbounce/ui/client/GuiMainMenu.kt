@@ -16,12 +16,12 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.texture.DynamicTexture
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.client.GuiModList
+import org.lwjgl.opengl.GL11
 import java.awt.Color
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.file.Files
 import javax.imageio.ImageIO
-import org.lwjgl.opengl.GL11
 import kotlin.concurrent.thread
 import kotlin.math.sin
 
@@ -72,7 +72,7 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
         Fonts.font40.drawStringWithShadow(creditInfo, width - 3F - Fonts.font40.getStringWidth(creditInfo), height - 12F, -1)
         if (useParallax) moveMouseEffect(mouseX, mouseY, 10F)
         GlStateManager.disableAlpha()
-        RenderUtils.drawImage2(bigLogo, width / 2F - 100F, height / 2F - 180F, 200, 200)
+        RenderUtils.drawImage2(bigLogo, width / 2F - 100F, height / 2F - 150F, 200, 200)
         GlStateManager.enableAlpha()
         renderBar(mouseX, mouseY, partialTicks)
         GL11.glPopMatrix()
@@ -99,7 +99,7 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
             GuiBackground.particles = !GuiBackground.particles
 
         val staticX = width / 2F - 120F
-        val staticY = height / 2F + 20F
+        val staticY = height / 2F + 40F
         var index: Int = 0
         for (icon in if (extendedModMode) ExtendedImageButton.values() else ImageButton.values()) {
             if (isMouseHover(staticX + 40F * index, staticY, staticX + 40F * (index + 1), staticY + 20F, mouseX, mouseY))
@@ -191,7 +191,7 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
 
     fun renderBar(mouseX: Int, mouseY: Int, partialTicks: Float) {
         val staticX = width / 2F - 120F
-        val staticY = height / 2F + 20F
+        val staticY = height / 2F + 40F
 
         RenderUtils.drawRect(
             staticX.toDouble(),
@@ -205,7 +205,7 @@ class GuiMainMenu : GuiScreen(), GuiYesNoCallback {
         var shouldAnimate = false
         var displayString: String? = null
         var moveX = 0F
-        val iconSize = 22F
+        val iconSize = 24F
 
         if (extendedModMode) {
             if (extendedBackgroundMode) {

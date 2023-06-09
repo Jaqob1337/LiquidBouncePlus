@@ -33,8 +33,8 @@ class Gapple : Module() {
 
     private val modeValue = ListValue("Mode", arrayOf("Auto", "LegitAuto", "Legit", "Head"), "Auto")
     private val percent = FloatValue("HealthPercent", 75.0f, 1.0f, 100.0f)
-    private val min = IntegerValue("MinDelay", 10, 1, 5000)
-    private val max = IntegerValue("MaxDelay", 20, 1, 5000)
+    private val min = IntegerValue("MinDelay", 2000, 1, 5000)
+    private val max = IntegerValue("MaxDelay", 100, 1, 5000)
     private val regenSec = FloatValue("MinRegenSec", 4.6f, 0.0f, 10.0f)
     private val groundCheck = BoolValue("OnlyOnGround", false)
     private val waitRegen = BoolValue("WaitRegen", true)
@@ -114,14 +114,18 @@ class Gapple : Module() {
                             mc.netHandler.addToSendQueue(C09PacketHeldItemChange(gappleInHotbar - 36))
                             mc.netHandler.addToSendQueue(C08PacketPlayerBlockPlacement(mc.thePlayer.heldItem))
                             eating = 0
-                        } else if (eating > 35 || (fastEatValue.get() && eating > eatDelayValue.get())) {
+                        } else if (eating > 35) {
                             repeat(35 - eating) {
                                 mc.netHandler.addToSendQueue(C03PacketPlayer(mc.thePlayer.onGround))
                             }
                             mc.netHandler.addToSendQueue(C09PacketHeldItemChange(mc.thePlayer.inventory.currentItem))
                             timer.reset()
                             tryHeal = false
-                            delay = 1
+                            delay = MathHelper.getRandomIntegerInRange(
+                                Random(),
+                                min.get(),
+                                max.get()
+                            ) // Verzögerungswert direkt ändern
                             lastHealTime = System.currentTimeMillis()
                         }
                     }

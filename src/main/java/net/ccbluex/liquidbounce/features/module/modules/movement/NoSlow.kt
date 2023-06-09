@@ -6,11 +6,7 @@
 package net.ccbluex.liquidbounce.features.module.modules.movement
 
 import net.ccbluex.liquidbounce.LiquidBounce
-import net.ccbluex.liquidbounce.event.EventTarget
-import net.ccbluex.liquidbounce.event.EventState
-import net.ccbluex.liquidbounce.event.MotionEvent
-import net.ccbluex.liquidbounce.event.SlowDownEvent
-import net.ccbluex.liquidbounce.event.PacketEvent
+import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.ModuleCategory
 import net.ccbluex.liquidbounce.features.module.ModuleInfo
@@ -26,14 +22,8 @@ import net.ccbluex.liquidbounce.value.ListValue
 import net.minecraft.item.*
 import net.minecraft.network.Packet
 import net.minecraft.network.play.INetHandlerPlayServer
-import net.minecraft.network.play.client.C0BPacketEntityAction
-import net.minecraft.network.play.client.C03PacketPlayer
-import net.minecraft.network.play.client.C03PacketPlayer.C04PacketPlayerPosition
-import net.minecraft.network.play.client.C03PacketPlayer.C05PacketPlayerLook
-import net.minecraft.network.play.client.C03PacketPlayer.C06PacketPlayerPosLook
-import net.minecraft.network.play.client.C07PacketPlayerDigging
-import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
-import net.minecraft.network.play.client.C09PacketHeldItemChange
+import net.minecraft.network.play.client.*
+import net.minecraft.network.play.client.C03PacketPlayer.*
 import net.minecraft.network.play.server.S30PacketWindowItems
 import net.minecraft.util.BlockPos
 import net.minecraft.util.EnumFacing
@@ -69,6 +59,7 @@ class NoSlow : Module() {
     private var lastZ = 0.0
     private var lastOnGround = false
 
+    private var wasEnabled = false
     private var fasterDelay = false
     private var placeDelay = 0L
     private val timer = MSTimer()
@@ -76,7 +67,7 @@ class NoSlow : Module() {
     override fun onEnable() {
         blinkPackets.clear()
         msTimer.reset()
-    }   
+    }
 
     override fun onDisable() {
         blinkPackets.forEach {
@@ -85,7 +76,7 @@ class NoSlow : Module() {
         blinkPackets.clear()
     }
 
-    override val tag: String?
+    override val tag: String
         get() = modeValue.get()
 
     private fun sendPacket(event : MotionEvent, sendC07 : Boolean, sendC08 : Boolean, delay : Boolean, delayValue : Long, onGround : Boolean, watchDog : Boolean = false) {
@@ -117,7 +108,7 @@ class NoSlow : Module() {
     @EventTarget
     fun onPacket(event: PacketEvent) {
         val packet = event.packet
-        val killAura = LiquidBounce.moduleManager[KillAura::class.java]!! as KillAura
+        val killAura = LiquidBounce.moduleManager[KillAura::class.java]!!
 
         if (modeValue.get().equals("watchdog", true) && packet is S30PacketWindowItems && (mc.thePlayer.isUsingItem || mc.thePlayer.isBlocking)) {
             event.cancelEvent()
@@ -130,9 +121,9 @@ class NoSlow : Module() {
                 if (packet is C04PacketPlayerPosition || packet is C06PacketPlayerPosLook) {
                     if (mc.thePlayer.positionUpdateTicks >= 20 && packetTriggerValue.get().equals("postrelease", true)) {
                         (packet as C03PacketPlayer).x = lastX
-                        (packet as C03PacketPlayer).y = lastY
-                        (packet as C03PacketPlayer).z = lastZ
-                        (packet as C03PacketPlayer).onGround = lastOnGround
+                        packet.y = lastY
+                        packet.z = lastZ
+                        packet.onGround = lastOnGround
                         if (debugValue.get())
                             ClientUtils.displayChatMessage("pos update reached 20")
                     } else {
@@ -163,7 +154,7 @@ class NoSlow : Module() {
                     blinkPackets.add(packet as Packet<INetHandlerPlayServer>)
                     if (debugValue.get())
                         ClientUtils.displayChatMessage("packet action added at ${blinkPackets.size - 1}")
-                }   
+                }
                 if (packet is C07PacketPlayerDigging && packetTriggerValue.get().equals("prerelease", true)) {
                     if (blinkPackets.size > 0) {
                         blinkPackets.forEach {
@@ -184,19 +175,31 @@ class NoSlow : Module() {
             return
 
         val heldItem = mc.thePlayer.heldItem
-        val killAura = LiquidBounce.moduleManager[KillAura::class.java]!! as KillAura
+        val killAura = LiquidBounce.moduleManager[KillAura::class.java]!!
 
         when (modeValue.get().lowercase()) {
             "aac5" -> if (event.eventState == EventState.POST && (mc.thePlayer.isUsingItem || mc.thePlayer.isBlocking || killAura.blockingStatus)) {
-                mc.netHandler.addToSendQueue(C08PacketPlayerBlockPlacement(BlockPos(-1, -1, -1), 255, mc.thePlayer.inventory.getCurrentItem(), 0f, 0f, 0f))
+                mc.netHandler.addToSendQueue(
+                    C08PacketPlayerBlockPlacement(
+                        BlockPos(-1, -1, -1),
+                        255,
+                        mc.thePlayer.inventory.getCurrentItem(),
+                        0f,
+                        0f,
+                        0f
+                    )
+                )
             }
-            "watchdog" -> if (testValue.get() && (!killAura.state || !killAura.blockingStatus) 
+
+            "watchdog" -> if (testValue.get() && (!killAura.state || !killAura.blockingStatus)
                 && event.eventState == EventState.PRE
-                && mc.thePlayer.itemInUse != null && mc.thePlayer.itemInUse.item != null) {
+                && mc.thePlayer.itemInUse != null && mc.thePlayer.itemInUse.item != null
+            ) {
                 val item = mc.thePlayer.itemInUse.item
                 if (mc.thePlayer.isUsingItem && (item is ItemFood || item is ItemBucketMilk || item is ItemPotion) && mc.thePlayer.getItemInUseCount() >= 1)
                     PacketUtils.sendPacketNoEvent(C09PacketHeldItemChange(mc.thePlayer.inventory.currentItem))
             }
+
             "blink" -> {
                 if (event.eventState == EventState.PRE && !mc.thePlayer.isUsingItem && !mc.thePlayer.isBlocking) {
                     lastX = event.x

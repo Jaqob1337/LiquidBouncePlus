@@ -10,13 +10,10 @@ import net.ccbluex.liquidbounce.event.*;
 import net.ccbluex.liquidbounce.features.module.Module;
 import net.ccbluex.liquidbounce.features.module.ModuleCategory;
 import net.ccbluex.liquidbounce.features.module.ModuleInfo;
-import net.ccbluex.liquidbounce.features.module.modules.render.BlockOverlay;
-import net.ccbluex.liquidbounce.features.module.modules.movement.Fly;
-import net.ccbluex.liquidbounce.features.module.modules.movement.Sprint;
 import net.ccbluex.liquidbounce.features.module.modules.movement.Speed;
 import net.ccbluex.liquidbounce.injection.access.StaticStorage;
-import net.ccbluex.liquidbounce.ui.font.Fonts;
 import net.ccbluex.liquidbounce.ui.client.hud.element.elements.Notification;
+import net.ccbluex.liquidbounce.ui.font.Fonts;
 import net.ccbluex.liquidbounce.utils.*;
 import net.ccbluex.liquidbounce.utils.block.BlockUtils;
 import net.ccbluex.liquidbounce.utils.block.PlaceInfo;
@@ -48,11 +45,7 @@ import net.minecraft.stats.StatList;
 import net.minecraft.util.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
-import net.minecraft.network.play.client.C03PacketPlayer;
-import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
-import net.minecraft.network.play.client.C09PacketHeldItemChange;
-import net.minecraft.network.play.client.C0APacketAnimation;
-import net.minecraft.network.play.client.C0BPacketEntityAction;
+
 import java.awt.*;
 
 @ModuleInfo(name = "Scaffold", description = "Automatically places blocks beneath your feet.", category = ModuleCategory.WORLD, keyBind = Keyboard.KEY_I)
@@ -454,7 +447,7 @@ public class Scaffold extends Module {
         // scaffold custom speed if enabled
         if (customSpeedValue.get())
             MovementUtils.strafe(customMoveSpeedValue.get());
-    
+
         if (mc.thePlayer.onGround) {
             final String mode = modeValue.get();
 
@@ -692,10 +685,10 @@ public class Scaffold extends Module {
                 spinYaw = MathHelper.wrapAngleTo180_float(spinYaw);
                 speenRotation = new Rotation(spinYaw, speenPitchValue.get());
                 RotationUtils.setTargetRotation(speenRotation);
-            } else if (lockRotation != null) 
+            } else if (lockRotation != null)
                 RotationUtils.setTargetRotation(RotationUtils.limitAngleChange(RotationUtils.serverRotation, lockRotation, RandomUtils.nextFloat(minTurnSpeed.get(), maxTurnSpeed.get())));
         }
-            
+
         final String mode = modeValue.get();
         final EventState eventState = event.getEventState();
 
@@ -728,7 +721,7 @@ public class Scaffold extends Module {
             towerPlace = null;
             return;
         }
-        
+
         mc.timer.timerSpeed = towerTimerValue.get();
         if (noMoveOnlyValue.get() && noMoveFreezeValue.get())
             mc.thePlayer.motionX = mc.thePlayer.motionZ = 0;
@@ -759,7 +752,7 @@ public class Scaffold extends Module {
                         }
                     }
                 }
-            }  
+            }
         }
     }
 
@@ -931,13 +924,13 @@ public class Scaffold extends Module {
         final ScaledResolution scaledResolution = new ScaledResolution(mc);
         final String info = getBlocksAmount() + " blocks";
         int infoWidth = Fonts.fontSFUI40.getStringWidth(info);
-        int infoWidth2 = Fonts.minecraftFont.getStringWidth(getBlocksAmount()+"");
+        int infoWidth2 = Fonts.minecraftFont.getStringWidth(String.valueOf(getBlocksAmount()));
         if (counterMode.equalsIgnoreCase("simple")) {
-            Fonts.minecraftFont.drawString(getBlocksAmount()+"", scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2) - 1, scaledResolution.getScaledHeight() / 2 - 36, 0xFF000000, false);
-            Fonts.minecraftFont.drawString(getBlocksAmount()+"", scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2) + 1, scaledResolution.getScaledHeight() / 2 - 36, 0xFF000000, false);
-            Fonts.minecraftFont.drawString(getBlocksAmount()+"", scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2), scaledResolution.getScaledHeight() / 2 - 35, 0xFF000000, false);
-            Fonts.minecraftFont.drawString(getBlocksAmount()+"", scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2), scaledResolution.getScaledHeight() / 2 - 37, 0xFF000000, false);
-            Fonts.minecraftFont.drawString(getBlocksAmount()+"", scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2), scaledResolution.getScaledHeight() / 2 - 36, -1, false);
+            Fonts.minecraftFont.drawString(String.valueOf(getBlocksAmount()), scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2) - 1, scaledResolution.getScaledHeight() / 2 - 36, 0xFF000000, false);
+            Fonts.minecraftFont.drawString(String.valueOf(getBlocksAmount()), scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2) + 1, scaledResolution.getScaledHeight() / 2 - 36, 0xFF000000, false);
+            Fonts.minecraftFont.drawString(String.valueOf(getBlocksAmount()), scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2), scaledResolution.getScaledHeight() / 2 - 35, 0xFF000000, false);
+            Fonts.minecraftFont.drawString(String.valueOf(getBlocksAmount()), scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2), scaledResolution.getScaledHeight() / 2 - 37, 0xFF000000, false);
+            Fonts.minecraftFont.drawString(String.valueOf(getBlocksAmount()), scaledResolution.getScaledWidth() / 2 - (infoWidth2 / 2), scaledResolution.getScaledHeight() / 2 - 36, -1, false);
         }
         if (counterMode.equalsIgnoreCase("advanced")) {
             boolean canRenderStack = (slot >= 0 && slot < 9 && mc.thePlayer.inventory.mainInventory[slot] != null && mc.thePlayer.inventory.mainInventory[slot].getItem() != null && mc.thePlayer.inventory.mainInventory[slot].getItem() instanceof ItemBlock);
@@ -958,7 +951,7 @@ public class Scaffold extends Module {
 
             Fonts.fontSFUI40.drawCenteredString(info, scaledResolution.getScaledWidth() / 2, scaledResolution.getScaledHeight() / 2 - 36, -1);
         }
-        
+
         if (counterMode.equalsIgnoreCase("sigma")) {
             GlStateManager.translate(0, -14F - (progress * 4F), 0);
             //GL11.glPushMatrix();
@@ -1026,14 +1019,14 @@ public class Scaffold extends Module {
 
         for (int i = 0; i < ((modeValue.get().equalsIgnoreCase("Expand") && !towerActivation()) ? expandLengthValue.get() + 1 : 2); i++) {
             final BlockPos blockPos = new BlockPos(
-                mc.thePlayer.posX + x * i, 
-                (!towerActivation() 
-                    && (sameYValue.get() || 
-                        ((autoJumpValue.get() || 
-                            (smartSpeedValue.get() && LiquidBounce.moduleManager.getModule(Speed.class).getState())) 
-                            && !GameSettings.isKeyDown(mc.gameSettings.keyBindJump))) 
-                && launchY <= mc.thePlayer.posY) ? launchY - 1 : (mc.thePlayer.posY - (mc.thePlayer.posY == (int) mc.thePlayer.posY + 0.5D ? 0D : 1.0D) - (shouldGoDown ? 1D : 0)), 
-                mc.thePlayer.posZ + z * i);
+                    mc.thePlayer.posX + x * i,
+                    (!towerActivation()
+                            && (sameYValue.get() ||
+                            ((autoJumpValue.get() ||
+                                    (smartSpeedValue.get() && LiquidBounce.moduleManager.getModule(Speed.class).getState()))
+                                    && !GameSettings.isKeyDown(mc.gameSettings.keyBindJump)))
+                            && launchY <= mc.thePlayer.posY) ? launchY - 1 : (mc.thePlayer.posY - (mc.thePlayer.posY == (int) mc.thePlayer.posY + 0.5D ? 0D : 1.0D) - (shouldGoDown ? 1D : 0)),
+                    mc.thePlayer.posZ + z * i);
             final PlaceInfo placeInfo = PlaceInfo.get(blockPos);
 
             if (BlockUtils.isReplaceable(blockPos) && placeInfo != null) {
@@ -1046,7 +1039,7 @@ public class Scaffold extends Module {
     private boolean search(final BlockPos blockPosition, final boolean checks) {
         return search(blockPosition, checks, false);
     }
-    
+
     /**
      * Search for placeable block
      *
@@ -1061,9 +1054,9 @@ public class Scaffold extends Module {
             return false;
 
 
-        final boolean staticYawMode = rotationLookupValue.get().equalsIgnoreCase("AAC") 
-                || (rotationLookupValue.get().equalsIgnoreCase("same") && (rotationModeValue.get().equalsIgnoreCase("AAC") 
-                    || (rotationModeValue.get().contains("Static") && !rotationModeValue.get().equalsIgnoreCase("static3"))));
+        final boolean staticYawMode = rotationLookupValue.get().equalsIgnoreCase("AAC")
+                || (rotationLookupValue.get().equalsIgnoreCase("same") && (rotationModeValue.get().equalsIgnoreCase("AAC")
+                || (rotationModeValue.get().contains("Static") && !rotationModeValue.get().equalsIgnoreCase("static3"))));
 
         final Vec3 eyesPos = new Vec3(mc.thePlayer.posX, mc.thePlayer.getEntityBoundingBox().minY + mc.thePlayer.getEyeHeight(), mc.thePlayer.posZ);
 
@@ -1108,10 +1101,10 @@ public class Scaffold extends Module {
                             if ((rotationModeValue.get().equalsIgnoreCase("static2") || rotationModeValue.get().equalsIgnoreCase("static3")) && (keepRotOnJumpValue.get() || !mc.gameSettings.keyBindJump.isKeyDown()))
                                 rotation = new Rotation(rotation.getYaw(), staticPitchValue.get());
 
-                            if (rotationModeValue.get().equalsIgnoreCase("custom") && (keepRotOnJumpValue.get() || !mc.gameSettings.keyBindJump.isKeyDown())) 
+                            if (rotationModeValue.get().equalsIgnoreCase("custom") && (keepRotOnJumpValue.get() || !mc.gameSettings.keyBindJump.isKeyDown()))
                                 rotation = new Rotation(mc.thePlayer.rotationYaw + customYawValue.get(), customPitchValue.get());
 
-                            if (rotationModeValue.get().equalsIgnoreCase("spin") && speenRotation != null && (keepRotOnJumpValue.get() || !mc.gameSettings.keyBindJump.isKeyDown())) 
+                            if (rotationModeValue.get().equalsIgnoreCase("spin") && speenRotation != null && (keepRotOnJumpValue.get() || !mc.gameSettings.keyBindJump.isKeyDown()))
                                 rotation = speenRotation;
 
                             final Vec3 rotationVector = RotationUtils.getVectorForRotation(rotationLookupValue.get().equalsIgnoreCase("same") ? rotation : lookupRotation);
@@ -1154,7 +1147,7 @@ public class Scaffold extends Module {
                 lookupRotation = lockRotation;
         }
 
-        if (towerActive) 
+        if (towerActive)
             towerPlace = placeRotation.getPlaceInfo();
         else
             targetPlace = placeRotation.getPlaceInfo();
